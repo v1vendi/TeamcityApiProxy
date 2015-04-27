@@ -96,14 +96,12 @@
     function call_api(url) {
         return fetch(url).then(function (response) {
             return response.json();
-        }).then(function (json) {
-            return json.body;
         });
     }
 
     function checkBuildStatus() {
         call_api('/httpAuth/app/rest/buildTypes/id:rps_ci/builds?locator=running:any').then(function (response) {
-            var lastBuild = response.builds.build[0]
+            var lastBuild = response.build[0]
 
             var yellow = document.querySelector('.light.yellow')
 

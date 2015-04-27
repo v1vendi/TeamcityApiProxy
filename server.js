@@ -18,6 +18,7 @@ function server(request, response) {
         console.log(index.toString());
         response.end(index, 'utf-8');
         
+        return;
     }
     
     var login = 'i_komsa';
@@ -28,40 +29,27 @@ function server(request, response) {
         host: "teamcity.wargaming.net",
         path: request.url,
         headers: {
-            'Authorization': 'Basic ' + userpass
+            'Authorization': 'Basic ' + userpass,
+            'Accept': 'application/json'
         }
     };
     
-    var proxyRequest = https.get(options);
-    var proxyResponseBody = "";
-    proxyRequest.addListener('response', respond);
+    var proxyRequest = https.get(options).addListener('response', respond);
     
     function respond(proxyResponse) {
         
-        response.writeHead(proxyResponse.statusCode);
+        response.writeHead(proxyResponse.statusCode, {
+            'Content-Type': 'application/json'
+        });
         
+        var proxyResponseBody = "";
         
         proxyResponse.addListener('data', function (chunk) {
             proxyResponseBody += chunk;
         });
         
-        proxyResponse.addListener('end', sendJson);
-    }    ;
-    
-    function sendJson() {
-        
-        var parser = new xml2js.Parser({
-            ignoreAttrs: false,
-            mergeAttrs: true,
-            explicitArray: false
+        proxyResponse.addListener('end', function () {
+            response.end(proxyResponseBody);
         });
-        
-        parser.parseString(proxyResponseBody, function (error, result) {
-            var data = {
-                body: result
-            };
-            
-            response.end(JSON.stringify(data));
-        });
-    }
+    };
 }
