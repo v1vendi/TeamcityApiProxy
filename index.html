@@ -1,0 +1,129 @@
+﻿<!DOCTYPE html>
+
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <style>
+        .traffic-light {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            margin-left: -60px;
+            margin-top: -160px;
+            background-color: darkgrey;
+            width: 120px;
+            height: 320px;
+            border-radius: 30px;
+        }
+
+        .light {
+            position: relative;
+            left: 50%;
+            width: 80px;
+            height: 80px;
+            margin-left: -40px;
+            border-radius: 100%;
+            opacity: 0.2;
+            margin-top: 20px;
+            text-align: center;
+            line-height: 80px;
+        }
+
+        input {
+            display: none;
+        }
+
+            input[type=checkbox]:not(:checked):not(:indeterminate) ~ .red {
+                opacity: 1;
+                box-shadow: 0 0 6em red;
+            }
+
+            input[type=checkbox]:not(:checked):indeterminate ~ .yellow {
+                box-shadow: 0 0 6em yellow;
+                -webkit-animation: blinkYellow 1s step-end infinite;
+            }
+
+            input[type=checkbox]:checked ~ .green {
+                opacity: 1;
+                box-shadow: 0 0 6em #4cff00;
+            }
+
+        .light.red {
+            background-color: red;
+        }
+
+        .yellow {
+            background-color: yellow;
+        }
+
+        .green {
+            background-color: #4cff00;
+        }
+
+        @-webkit-keyframes blinkYellow {
+            0% {
+                opacity: 0.2;
+            }
+
+            50% {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="traffic-light">
+        <input type="checkbox" />
+        <div class="light red"></div>
+        <div class="light yellow"></div>
+        <div class="light green"></div>
+    </div>
+
+</body>
+</html>
+<script>
+
+    function setTrafficLight(value) {
+        var checkbox = document.querySelector('input[type=checkbox]');
+        if (value === undefined) {
+            checkbox.indeterminate = true;
+        } else {
+            checkbox.checked = !!value;
+        }
+    }
+
+    function call_api(url) {
+        return fetch(url).then(function (response) {
+            return response.json();
+        }).then(function (json) {
+            return json.body;
+        });
+    }
+
+    function checkBuildStatus() {
+        call_api('/httpAuth/app/rest/buildTypes/id:rps_ci/builds?locator=running:any').then(function (response) {
+            var lastBuild = response.builds.build[0]
+
+            var yellow = document.querySelector('.light.yellow')
+
+            if (lastBuild.state === 'running') {
+                setTrafficLight(undefined);
+                yellow.innerHTML = lastBuild.percentageComplete + '%';
+            } else {
+                yellow.innerHTML = "";
+
+                switch (lastBuild.status) {
+                    case "SUCCESS":
+                        setTrafficLight(true);
+                        break;
+                    case "FAILURE":
+                        setTrafficLight(false);
+                        break;
+                }
+            }
+        });
+    }
+
+    var interval = setInterval(checkBuildStatus, 5000);
+</script>

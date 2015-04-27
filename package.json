@@ -1,0 +1,13 @@
+{
+    "name": "TeamcityMonitor",
+    "version": "0.0.1",
+    "description": "Teamcity REST API json proxy",
+    "main": "server.js",
+    "author": {
+        "name": "v1vendi",
+        "email": "ilya.komsa@gmail.com"
+    },
+    "devDependencies": { 
+        "xml2js": ""
+    }
+}
